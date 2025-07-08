@@ -1,4 +1,5 @@
 # 🎮 Morpion Socket.IO - Version Optimisée
+## Equipe : Florian DECODTS - Anthony LOPES
 
 ## 📋 Description
 
