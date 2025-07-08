@@ -1,0 +1,387 @@
+/**
+ * Composants réutilisables et styles communs
+ */
+
+/* Messages d'information */
+.message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1em;
+    z-index: 1000;
+    min-width: 250px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: slideIn 0.3s ease-out;
+    transition: var(--transition);
+}
+
+.message.info {
+    background: linear-gradient(135deg, var(--info-color), #138496);
+    color: white;
+}
+
+.message.success {
+    background: linear-gradient(135deg, var(--success-color), #20a037);
+    color: white;
+}
+
+.message.warning {
+    background: linear-gradient(135deg, var(--warning-color), #e0a800);
+    color: var(--text-primary);
+}
+
+.message.error {
+    background: linear-gradient(135deg, var(--error-color), #c82333);
+    color: white;
+}
+
+.message::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.message.info::before {
+    content: 'ℹ️';
+}
+
+.message.success::before {
+    content: '✅';
+}
+
+.message.warning::before {
+    content: '⚠️';
+}
+
+.message.error::before {
+    content: '❌';
+}
+
+/* États de statut */
+.status {
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1.1em;
+    text-align: center;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+
+.status.waiting {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+.status.ready {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.status.playing {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.status.winner {
+    background: linear-gradient(135deg, var(--success-color), #20a037);
+    color: white;
+    animation: bounce 0.6s ease-out;
+}
+
+.status.loser {
+    background: linear-gradient(135deg, var(--error-color), #c82333);
+    color: white;
+}
+
+.status.draw {
+    background: linear-gradient(135deg, var(--warning-color), #e0a800);
+    color: var(--text-primary);
+}
+
+.status.finished {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+/* Cartes/Panels */
+.card {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card.elevated {
+    box-shadow: var(--shadow-lg);
+}
+
+.card.clickable {
+    cursor: pointer;
+}
+
+.card.clickable:hover {
+    border-color: var(--primary-color);
+}
+
+.card.clickable:active {
+    transform: translateY(0);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.badge.success {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge.warning {
+    background: var(--warning-color);
+    color: var(--text-primary);
+}
+
+.badge.error {
+    background: var(--error-color);
+    color: white;
+}
+
+.badge.info {
+    background: var(--info-color);
+    color: white;
+}
+
+/* Indicateurs de chargement */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner.large {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+.spinner.small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dividers */
+.divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 20px 0;
+}
+
+.divider.thick {
+    height: 2px;
+}
+
+.divider.vertical {
+    width: 1px;
+    height: 100%;
+    margin: 0 20px;
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+/* Animations personnalisées */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px var(--primary-color); }
+    50% { box-shadow: 0 0 20px var(--primary-color); }
+    100% { box-shadow: 0 0 5px var(--primary-color); }
+}
+
+/* Animations de victoire */
+.winner-animation {
+    animation: glow 0.5s ease-in-out 3;
+}
+
+.winner-animation::before {
+    content: '🎉';
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2em;
+    animation: bounce 1s ease-out infinite;
+}
+
+/* Flexbox utilitaires */
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-around {
+    justify-content: space-around;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* Grid utilitaires */
+.grid {
+    display: grid;
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.gap-3 { gap: 1.5rem; }
+.gap-4 { gap: 2rem; }
+
+/* Responsive utilitaires */
+@media (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+    
+    .mobile-full {
+        width: 100%;
+    }
+    
+    .mobile-center {
+        text-align: center;
+    }
+    
+    .message {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 15px;
+        margin: 10px 0;
+    }
+    
+    .status {
+        padding: 12px 16px;
+        font-size: 1em;
+    }
+}

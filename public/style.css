@@ -1,0 +1,364 @@
+@import './css/components.css';
+
+body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Styles pour l'écran de lobby */
+        .lobby-screen {
+            display: block;
+        }
+
+        .lobby-controls {
+            margin-bottom: 30px;
+        }
+
+        .lobby-controls button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+        }
+
+        .room-input {
+            margin: 20px 0;
+        }
+
+        .room-input input {
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .room-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .rooms-list {
+            margin-top: 20px;
+        }
+
+        .rooms-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .room-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .room-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .room-info {
+            text-align: left;
+        }
+
+        .room-id {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .room-status {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .room-players {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .room-full {
+            color: #dc3545;
+        }
+
+        .room-actions button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        /* Styles pour l'écran de jeu */
+        .game-screen {
+            display: block;
+        }
+
+        .game-header {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .room-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .room-id-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .leave-room-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .leave-room-btn:hover {
+            background: #c82333;
+        }
+
+        .player-info {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .turn-info {
+            color: #666;
+            font-size: 1em;
+        }
+
+        /* Scoreboard */
+        .scoreboard {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .scoreboard h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .score-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .score-item.x {
+            border-color: #e74c3c;
+        }
+
+        .score-item.o {
+            border-color: #3498db;
+        }
+
+        .score-item.draw {
+            border-color: #f39c12;
+        }
+
+        .score-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .score-label.x {
+            color: #e74c3c;
+        }
+
+        .score-label.o {
+            color: #3498db;
+        }
+
+        .score-label.draw {
+            color: #f39c12;
+        }
+
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+            background: #333;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: none;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell:hover:not(:disabled) {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .cell:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .cell.x {
+            color: #e74c3c;
+        }
+
+        .cell.o {
+            color: #3498db;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #363;
+            border: 1px solid #cfc;
+        }
+
+        .message.info {
+            background: #eef;
+            color: #33c;
+            border: 1px solid #ccf;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .status.waiting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .winner-animation {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .hidden {
+            display: none !important;
+        }

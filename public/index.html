@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Morpion en ligne - Salles</title>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Morpion en ligne</h1>
+        
+        <!-- Écran de lobby -->
+        <div id="lobbyScreen" class="lobby-screen">
+            <div class="lobby-controls">
+                <button id="createRoomBtn" onclick="createRoom()">Créer une salle</button>
+                <button id="refreshRoomsBtn" onclick="refreshRooms()">Actualiser</button>
+            </div>
+
+            <div class="room-input">
+                <input type="text" id="roomIdInput" placeholder="ID DE LA SALLE" maxlength="6">
+                <br>
+                <button onclick="joinRoomById()" style="margin-top: 10px;">Rejoindre par ID</button>
+            </div>
+
+            <div class="rooms-list">
+                <h3>Salles disponibles</h3>
+                <div id="roomsList">
+                    <div class="status waiting">Chargement des salles...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de jeu -->
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="game-header">
+                <div class="room-info-header">
+                    <div class="room-id-display">Salle: <span id="currentRoomId">-</span></div>
+                    <button class="leave-room-btn" onclick="leaveRoom()">Quitter</button>
+                </div>
+                <div class="player-info" id="playerInfo">Connexion en cours...</div>
+                <div class="turn-info" id="turnInfo">En attente d'un autre joueur</div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="scoreboard">
+                <h3>🏆 Tableau des scores</h3>
+                <div class="score-grid">
+                    <div class="score-item x">
+                        <div class="score-label x">Joueur X</div>
+                        <div class="score-value" id="scoreX">0</div>
+                    </div>
+                    <div class="score-item draw">
+                        <div class="score-label draw">Égalités</div>
+                        <div class="score-value" id="scoreDraws">0</div>
+                    </div>
+                    <div class="score-item o">
+                        <div class="score-label o">Joueur O</div>
+                        <div class="score-value" id="scoreO">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board" id="board">
+                <button class="cell" data-index="0"></button>
+                <button class="cell" data-index="1"></button>
+                <button class="cell" data-index="2"></button>
+                <button class="cell" data-index="3"></button>
+                <button class="cell" data-index="4"></button>
+                <button class="cell" data-index="5"></button>
+                <button class="cell" data-index="6"></button>
+                <button class="cell" data-index="7"></button>
+                <button class="cell" data-index="8"></button>
+            </div>
+
+            <div class="controls">
+                <button id="newGameBtn" onclick="newGame()">Nouvelle partie</button>
+                <button id="resetScoresBtn" onclick="resetScores()" style="margin-left: 10px; background: #dc3545;">Remettre à zéro</button>
+            </div>
+
+            <div id="gameStatus" class="status waiting">
+                En attente d'un autre joueur...
+            </div>
+        </div>
+
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let playerSymbol = null;
+        let currentRoomId = null;
+        let gameStarted = false;
+        let currentPlayer = 'X';
+        let gameOver = false;
+        let isCreator = false;
+
+        // Éléments DOM
+        const lobbyScreen = document.getElementById('lobbyScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const roomsList = document.getElementById('roomsList');
+        const roomIdInput = document.getElementById('roomIdInput');
+        const currentRoomIdDisplay = document.getElementById('currentRoomId');
+        const cells = document.querySelectorAll('.cell');
+        const playerInfo = document.getElementById('playerInfo');
+        const turnInfo = document.getElementById('turnInfo');
+        const gameStatus = document.getElementById('gameStatus');
+        const messageDiv = document.getElementById('message');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const resetScoresBtn = document.getElementById('resetScoresBtn');
+
+        // Éléments scoreboard
+        const scoreX = document.getElementById('scoreX');
+        const scoreO = document.getElementById('scoreO');
+        const scoreDraws = document.getElementById('scoreDraws');
+
+        // Initialiser le plateau
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        // Transformer l'input en majuscules
+        roomIdInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Fonctions de navigation
+        function showLobby() {
+            lobbyScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            refreshRooms();
+        }
+
+        function showGame() {
+            lobbyScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+        }
+
+        // Fonctions de gestion des salles
+        function createRoom() {
+            socket.emit('create-room', (response) => {
+                if (response.success) {
+                    showMessage(`Salle ${response.roomId} créée!`, 'success');
+                } else {
+                    showMessage('Erreur lors de la création de la salle', 'error');
+                }
+            });
+        }
+
+        function joinRoomById() {
+            const roomId = roomIdInput.value.trim();
+            if (!roomId) {
+                showMessage('Veuillez entrer un ID de salle', 'error');
+                return;
+            }
+            joinRoom(roomId);
+        }
+
+        function joinRoom(roomId) {
+            socket.emit('join-room', roomId, (response) => {
+                if (!response.success) {
+                    showMessage(response.error, 'error');
+                }
+            });
+        }
+
+        function leaveRoom() {
+            socket.emit('leave-room');
+        }
+
+        function refreshRooms() {
+            socket.emit('get-rooms');
+        }
+
+        function resetScores() {
+            if (isCreator) {
+                socket.emit('reset-scores');
+            } else {
+                showMessage('Seul le créateur peut remettre les scores à zéro', 'error');
+            }
+        }
+
+        function updateRoomsList(rooms) {
+            if (rooms.length === 0) {
+                roomsList.innerHTML = '<div class="status waiting">Aucune salle disponible</div>';
+                return;
+            }
+
+            roomsList.innerHTML = '';
+            rooms.forEach(room => {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room-item';
+                
+                const isFull = room.players >= room.maxPlayers;
+                const statusText = room.gameStarted ? 'En cours' : 'En attente';
+                const statusClass = isFull ? 'room-full' : 'room-players';
+                
+                roomElement.innerHTML = `
+                    <div class="room-info">
+                        <div class="room-id">${room.id}</div>
+                        <div class="room-status">
+                            <span class="${statusClass}">${room.players}/${room.maxPlayers} joueurs</span>
+                            - ${statusText}
+                        </div>
+                    </div>
+                    <div class="room-actions">
+                        <button onclick="joinRoom('${room.id}')" ${isFull ? 'disabled' : ''}>
+                            ${isFull ? 'Complet' : 'Rejoindre'}
+                        </button>
+                    </div>
+                `;
+                
+                roomsList.appendChild(roomElement);
+            });
+        }
+
+        // Fonctions de jeu
+        function handleCellClick(event) {
+            const index = parseInt(event.target.dataset.index);
+            if (!gameStarted || gameOver) return;
+            
+            socket.emit('make-move', index);
+        }
+
+        function updateBoard(gameState) {
+            const board = gameState.board;
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index] || '';
+                cell.className = 'cell';
+                if (board[index]) {
+                    cell.classList.add(board[index].toLowerCase());
+                    cell.disabled = true;
+                } else {
+                    cell.disabled = !gameStarted || gameOver;
+                }
+            });
+        }
+
+        function updateScoreboard(scores) {
+            scoreX.textContent = scores.X || 0;
+            scoreO.textContent = scores.O || 0;
+            scoreDraws.textContent = scores.draws || 0;
+        }
+
+        function newGame() {
+            socket.emit('new-game');
+        }
+
+        function showMessage(text, type = 'info') {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 4000);
+        }
+
+        // Événements Socket.IO
+        socket.on('rooms-list', (rooms) => {
+            updateRoomsList(rooms);
+        });
+
+        socket.on('room-joined', (data) => {
+            currentRoomId = data.roomId;
+            playerSymbol = data.symbol;
+            isCreator = data.isCreator;
+            
+            currentRoomIdDisplay.textContent = data.roomId;
+            playerInfo.textContent = `Vous êtes: ${data.symbol}`;
+            if (data.symbol === 'X') {
+                playerInfo.innerHTML += ' <span style="color: #e74c3c;">●</span>';
+            } else {
+                playerInfo.innerHTML += ' <span style="color: #3498db;">●</span>';
+            }
+            
+            // Afficher ou masquer les boutons selon le rôle
+            newGameBtn.style.display = isCreator ? 'inline-block' : 'none';
+            resetScoresBtn.style.display = isCreator ? 'inline-block' : 'none';
+            
+            showGame();
+            showMessage(`Vous avez rejoint la salle ${data.roomId}`, 'success');
+        });
+
+        socket.on('room-left', () => {
+            currentRoomId = null;
+            playerSymbol = null;
+            isCreator = false;
+            gameStarted = false;
+            gameOver = false;
+            
+            showLobby();
+            showMessage('Vous avez quitté la salle', 'info');
+        });
+
+        socket.on('player-joined', (data) => {
+            showMessage(`Un joueur a rejoint la salle`, 'info');
+        });
+
+        socket.on('player-left', () => {
+            showMessage('L\'autre joueur a quitté la salle', 'info');
+            gameStarted = false;
+            gameOver = false;
+            gameStatus.textContent = 'En attente d\'un autre joueur...';
+            gameStatus.className = 'status waiting';
+            turnInfo.textContent = 'En attente d\'un autre joueur';
+            turnInfo.style.color = '#666';
+        });
+
+        socket.on('game-started', () => {
+            gameStarted = true;
+            gameOver = false;
+            gameStatus.textContent = 'Partie en cours!';
+            gameStatus.className = 'status ready';
+            showMessage('La partie commence!', 'success');
+        });
+
+        socket.on('game-stopped', () => {
+            gameStarted = false;
+            gameOver = false;
+            gameStatus.textContent = 'Partie interrompue - En attente d\'un autre joueur';
+            gameStatus.className = 'status waiting';
+            turnInfo.textContent = 'En attente d\'un autre joueur';
+            turnInfo.style.color = '#666';
+        });
+
+        socket.on('game-state', (gameState) => {
+            updateBoard(gameState);
+            currentPlayer = gameState.currentPlayer;
+            gameOver = !!gameState.winner;
+            
+            if (gameStarted && !gameOver) {
+                if (gameState.currentPlayer === playerSymbol) {
+                    turnInfo.textContent = 'C\'est votre tour!';
+                    turnInfo.style.color = '#2ecc71';
+                } else {
+                    turnInfo.textContent = `Au tour de ${gameState.currentPlayer}`;
+                    turnInfo.style.color = '#e67e22';
+                }
+            }
+        });
+
+        socket.on('score-update', (scores) => {
+            updateScoreboard(scores);
+        });
+
+        socket.on('scores-reset', () => {
+            updateScoreboard({ X: 0, O: 0, draws: 0 });
+            showMessage('Les scores ont été remis à zéro', 'info');
+        });
+
+        socket.on('game-over', (data) => {
+            gameOver = true;
+            const container = document.querySelector('.container');
+            const winner = data.winner;
+            
+            if (winner === 'draw') {
+                turnInfo.textContent = 'Match nul!';
+                turnInfo.style.color = '#f39c12';
+                gameStatus.textContent = 'Match nul!';
+                gameStatus.className = 'status draw';
+                showMessage('Match nul! Personne n\'a gagné.', 'info');
+            } else {
+                turnInfo.textContent = `${winner} a gagné!`;
+                if (winner === playerSymbol) {
+                    turnInfo.style.color = '#2ecc71';
+                    gameStatus.textContent = 'Vous avez gagné!';
+                    gameStatus.className = 'status winner';
+                    showMessage('Félicitations! Vous avez gagné! 🎉', 'success');
+                    container.classList.add('winner-animation');
+                } else {
+                    turnInfo.style.color = '#e74c3c';
+                    gameStatus.textContent = 'Vous avez perdu!';
+                    gameStatus.className = 'status loser';
+                    showMessage('Dommage! Vous avez perdu. 😔', 'error');
+                }
+            }
+            
+            setTimeout(() => {
+                container.classList.remove('winner-animation');
+            }, 3000);
+        });
+
+        socket.on('player-disconnected', () => {
+            showMessage('L\'autre joueur s\'est déconnecté', 'info');
+            gameStarted = false;
+            gameOver = false;
+            gameStatus.textContent = 'En attente d\'un autre joueur...';
+            gameStatus.className = 'status waiting';
+            turnInfo.textContent = 'En attente d\'un autre joueur';
+            turnInfo.style.color = '#666';
+            
+            // Réinitialiser le plateau
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.className = 'cell';
+                cell.disabled = true;
+            });
+        });
+
+        socket.on('error', (errorMessage) => {
+            showMessage(errorMessage, 'error');
+        });
+
+        socket.on('connect', () => {
+            console.log('Connecté au serveur');
+            refreshRooms();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Déconnecté du serveur');
+            showMessage('Connexion perdue. Tentative de reconnexion...', 'error');
+            showLobby();
+        });
+
+        // Initialiser l'interface
+        showLobby();
+    </script>
+</body>
+</html>
